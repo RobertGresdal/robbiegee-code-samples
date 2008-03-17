@@ -1,0 +1,8 @@
+<Window
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid x:Name="LayoutRoot">
+    <Button Margin="8,0,8,5" VerticalAlignment="Bottom" Content="Button" Name="the_button"/>
+    <TextBox Margin="8,8,8,38" Name="the_text_box"/>
+  </Grid>
+</Window>
