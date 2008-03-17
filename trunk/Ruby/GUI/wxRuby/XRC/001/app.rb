@@ -8,6 +8,7 @@
      super
      #evt_button(upper_bt) { text_box.upcase! }
      #evt_button(lower_bt) { text_box.downcase! }
+     evt_button(button) { CaseChangeFrame.new.show }
    end
  end
 
