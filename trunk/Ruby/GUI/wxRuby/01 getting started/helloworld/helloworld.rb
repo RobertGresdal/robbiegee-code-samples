@@ -1,3 +1,4 @@
+require 'rubygems'
 require "wx"
  include Wx
  class HelloWorld < App  # a new class which derives from the Wx::App class
