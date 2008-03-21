@@ -49,23 +49,12 @@ class Neuron
 		# todo: there is no code that use the fatigue level yet
 		@fatigueInertia = 0.1
 		
-		
-		#if af && af.is_a(Proc) then
-		#if af then
-		if af && af.class=='Proc' then
+		if af != nil && af.class==Proc then
 			@af  = af
 		else
 			@af = Neuron::ACT_SIGMOID #Proc.new do |x| {1/(1+Math.exp(-x)) }# Use sigmoid as default
-			#@af = af ? af : function(x){return 1/(1+Math.exp(-x))}; 
 		end
-		#@af = af && af.is_a(Proc) ? af : $PROC_SIGMOID
 		@threshold = threshold.to_f
-		
-		# Linear function
-		#~ #$ACT_LINEAR = Proc.new do |x|
-		#~ #	x
-		#~ #end
-		#~ #$ACT_LINEAR = 1
 	end
 	
 	
