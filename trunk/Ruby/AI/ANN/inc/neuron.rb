@@ -9,6 +9,7 @@ require 'inc/connection'
 #
 #@see http://faculty.washington.edu/chudler/cells.html
 class Neuron
+	attr_reader :ACT_STEP, :ACT_LINEAR, :ACT_SIGMOID
 	
 	#* +af+ The activation function. Needs x as parameter for process
 	#* +threshold+ If af is greater or equal to threshold the neuron fires
@@ -20,7 +21,7 @@ class Neuron
 		@weights = 0.0
 		
 		# Memory
-		@bias = 0 
+		@bias = 0.0
 		
 		# false means that we have not been triggered since we last fired (we're inactive)
 		@triggerstate = false 
@@ -35,7 +36,7 @@ class Neuron
 		# The current fatigue level. If it reaches 1, the axon stops firing until
 		# the fatigue has worn off
 		# todo: there is no code that use the fatigue level yet
-		@fatigue = 0
+		@fatigue = 0.0
 		
 		# if the axon value reaches the fatigue limit, the fatigue increases
 		# todo: there is no code that use the fatigue level yet
@@ -49,61 +50,41 @@ class Neuron
 		@fatigueInertia = 0.1
 		
 		
-		if af && af.is_a(Proc) then
+		#if af && af.is_a(Proc) then
+		#if af then
+		if af && af.class=='Proc' then
 			@af  = af
 		else
-			@af = $PROC_SIGMOID;#Proc.new do |x| {1/(1+Math.exp(-x)) }# Use sigmoid as default
+			@af = Neuron::ACT_SIGMOID #Proc.new do |x| {1/(1+Math.exp(-x)) }# Use sigmoid as default
 			#@af = af ? af : function(x){return 1/(1+Math.exp(-x))}; 
 		end
 		#@af = af && af.is_a(Proc) ? af : $PROC_SIGMOID
 		@threshold = threshold.to_f
+		
+		# Linear function
+		#~ #$ACT_LINEAR = Proc.new do |x|
+		#~ #	x
+		#~ #end
+		#~ #$ACT_LINEAR = 1
 	end
 	
+	
+	#Step function
+	ACT_STEP = Proc.new do |x|
+		(x>=1?1:0)
+	end
+	# Linear function
+	ACT_LINEAR = Proc.new do |x|
+		x
+	end
 	# Sigmoid math function
-	$PROC_SIGMOID = Proc.new do |x|
+	ACT_SIGMOID = Proc.new do |x|
 		1/(1+Math.exp(-x))
 	end
 	
-	# an array of neurons we are connected to
-	#@connections =  [] 
-	
-	# Memory
-	#@bias = 0 
-	
-	# The input value of all weights
-	#@weights = 0.0
-	
-	# false means that we have not been triggered since we last fired (we're inactive)
-	#@triggerstate = false 
-	
-	#every triggering has a unique id, so we know that if this id is 3 and 
-	# the new id is 6 we know there has been 3 triggerings in between. Every time 
-	# the neuron is triggered, we need to know the trigger id so we can figure
-	# out the fatigue of this neuron. High fatigue means we stop firing. That means 
-	# we have a protection so a loop of neurons will not fire indefinetly
-	#@triggerID = 0 
 	
 	#~ # attr_accessor :af, :threshold;
 	#~ # threshold.is_a?(Float)
-	
-	# The current fatigue level. If it reaches 1, the axon stops firing until
-	# the fatigue has worn off
-	#
-	# todo: there is no code that use the fatigue level yet
-	#@fatigue = 0
-	
-	# if the axon value reaches the fatigue limit, the fatigue increases
-	#
-	# todo: there is no code that use the fatigue level yet
-	#@fatigueLimit = 1
-	
-	# The inertia of the fatigue. This means that a low inertia will cause
-	# the neuron to become fatigued slower, it will also heal up faster.
-	# A neuron with high inertia will keep going for longer, but will also
-	# stay fatigued for longer.
-	# 
-	# todo: there is no code that use the fatigue level yet
-	#@fatigueInertia = 0.1
 	
 	#~ #fatigueSpeed is how quickly the neuron is fatigued when the neuron
 	#~ # is overloaded.
@@ -118,8 +99,6 @@ class Neuron
 	#~ # fatigue*1.331
 	
 	#@fatigueSpeed = Proc.new do |runs| 1.1**runs end
-	
-	
 	
 	# Calls all neurons we are connected to, telling them what our value is
 	# 
@@ -175,7 +154,7 @@ class Neuron
 	
 	#Represent the neuron as a string
 	def to_s 
-		'Value is '+self.axonValue.to_s
+		self.axonValue.to_s
 	end
 	
 	# Adds a connection to another neuron (extend the axon)
