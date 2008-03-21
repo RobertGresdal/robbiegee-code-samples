@@ -16,7 +16,7 @@ class Neuron
 	def initialize( threshold, af )
 		# an array of neurons we are connected to
 		@connections =  [] 
-	
+		
 		# The input value of all weights
 		@weights = 0.0
 		
@@ -25,7 +25,7 @@ class Neuron
 		
 		# false means that we have not been triggered since we last fired (we're inactive)
 		@triggerstate = false 
-	
+		
 		#every triggering has a unique id, so we know that if this id is 3 and 
 		# the new id is 6 we know there has been 3 triggerings in between. Every time 
 		# the neuron is triggered, we need to know the trigger id so we can figure
@@ -52,21 +52,26 @@ class Neuron
 		if af != nil && af.class==Proc then
 			@af  = af
 		else
-			@af = Neuron::ACT_SIGMOID #Proc.new do |x| {1/(1+Math.exp(-x)) }# Use sigmoid as default
+			@af = Neuron::ACT_SIGMOID 
+			#Proc.new do |x| {1/(1+Math.exp(-x)) }# Use sigmoid as default
 		end
 		@threshold = threshold.to_f
+		
+		# Listeners
+		@onFireListeners = []
+		@onTriggerListeners = []
 	end
 	
 	
-	#Step function
+	#Step activation function
 	ACT_STEP = Proc.new do |x|
 		(x>=1?1:0)
 	end
-	# Linear function
+	# Linear activation function
 	ACT_LINEAR = Proc.new do |x|
-		x
+		x.to_f
 	end
-	# Sigmoid math function
+	# Sigmoid activation function
 	ACT_SIGMOID = Proc.new do |x|
 		1/(1+Math.exp(-x))
 	end
@@ -95,7 +100,7 @@ class Neuron
 	# along with the weights, passed to the activation function and, if large
 	# enough value, fire to all connected neurons.
 	# 
-	# * _Proc_ *register*
+	# * _Proc_ *register* Process the triggered neurons should call to register themselves as having been triggered
 	# @return true if it fired, false if the threshold was not reached
 	def fire(register=nil)
 		@triggerstate = false # firing, remember it
@@ -103,9 +108,17 @@ class Neuron
 		# fire to all connections
 		if value >= @threshold then 
 			#for(var i=0,end=this.connections.length;i<end;i++){
+			# Fire to other neurons
 			@connections.length.times do |i|
 				c = @connections[i]
 				c.neuron.trigger(value*c.weight,register) # if we let the code here check the type of "neuron" to be function and call that directly, it'd save a bit of hassle getting the output. but that could be done better in the implementation of adding new neurons connections.
+			end
+			# Call Fire listeners
+			if @onFireListeners.class==Array then
+				e = FireEvent.new(self)
+				@onFireListeners.each do |listener|
+					listener.call(e)
+				end
 			end
 			return true
 		else
@@ -136,7 +149,7 @@ class Neuron
 		@weights += value.to_f
 		if !@triggerstate && register.is_a?(Proc) then
 			register.call(self)
-			@triggerstate = true # we have fired this round
+			@triggerstate = true # we have been triggered this round
 		end
 	end #trigger
 	
@@ -146,21 +159,40 @@ class Neuron
 		self.axonValue.to_s
 	end
 	
+	def to_f
+		self.axonValue.to_f
+	end
+	
 	# Adds a connection to another neuron (extend the axon)
 	def addConnection(weight,neuron)
 		@connections.push( Connection.new(weight,neuron) )
 		#@connections[@connections.length] = {'weight':weight,'neuron':neuron}
 	end #addConnection
 	
-	#~ # TODO: implement
-	#~ # think of serialization as the gene sequence :-)
-	#~ def serialize
-		#~ "TODO"
-	#~ end
 	
-	#~ # TODO: implement
-	#~ def unserialize serialized
-		#~ self
-	#~ end
+	
+	# Will alert listeners when this neuron fires. Very useful
+	# for listening on output.
+	def onFire listener
+		@onFireListeners.push(listener)
+		#puts @onFireListeners.length
+	end
+	# Registers a listener for when this neuron is triggered
+	def onTrigger listener
+		@onTriggerListeners.push(listener)
+	end
+	
 	
 end #Neuron
+
+class FireEvent #< Event
+	attr_reader :source
+	def initialize source
+		@source = source
+	end 
+end
+#~ class Event
+	#~ def initialize source
+		#~ @source = source
+	#~ end
+#~ end
