@@ -16,6 +16,14 @@ class Net
 		@neurons.push(neuron).length-1
 	end
 	
+    # Provides a timer and attempts to sleep the correct amount of time
+    # regardless of how irratic the sleep function can be by calculating
+    # several times without sleeping, then sleeping and waiting to sleep
+    # again until we're running behind again. If the frames is set to 0.1
+    # and larger this wouldn't really be needed, but a good frames timer
+    # should probably be around 0.01 I believe. Some experimentation should
+    # show us this, but unlimited is a really bad idea so we need a timer
+    # and the lowest sleep we can do is too slow (around 0.05 is the least)
 	def run
 		start = Time.new
 		
@@ -37,36 +45,17 @@ class Net
 			
 			if delay < frames then
 				# TODO: do usual stuff here
-				puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s+' (Sleeping)'
+				compute_nets(true)
 				sleep( frames )
 			else 
 				# TODO: do same usual stuff here, this will not be sleeped after
-				puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+				compute_nets(false) #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
 			end
 			delay -= frames
 			
 			time = now
 		end
 		puts 'Total = '+(Time.new-start).to_s
-		
-		
-		
-		
-		
-		
-		#remember, sleep is very irratic here. I need to do something like 
-		# "run twice or thrice and then sleep"
-		# maybe I could calculate how many runs for every 100th milliseconds
-		# and do that, then sleep if need be.
-		
-		# 1. for every active item
-		# 1.1 n.fire(next_active)
-		# 1.2 stop when next_active is empty
-		
-		# start, do something
-		# time it, store if we're ahead or behind
-		# do not sleep if we're behind, but sleep if we're ahead
-		# if we're behind with a second or more, don't store more han a second ehindtime
 	end
 	
 	
@@ -81,4 +70,14 @@ class Net
 	# Connect neuron1 to neuron 2 with weight
 	#def connect( n1, n2, weight )
 	
+    
+    private # All methods below are private methods
+    
+    def compute_nets sleeping
+        if sleeping then
+            puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s+' (Sleeping)'
+        else 
+            puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+        end
+    end
 end
