@@ -1,5 +1,5 @@
 # Add neurons in here, then add connections
-class Net
+class NNet
 	attr_reader :neurons
 	attr_accessor :frames, :maxDurationLeeway
 	
@@ -45,11 +45,11 @@ class Net
 			
 			if delay < frames then
 				# TODO: do usual stuff here
-				compute_nets(true)
+				compute_nets(true, now, time, delay)
 				sleep( frames )
 			else 
 				# TODO: do same usual stuff here, this will not be sleeped after
-				compute_nets(false) #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+				compute_nets(false, now, time, delay) #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
 			end
 			delay -= frames
 			
@@ -73,11 +73,13 @@ class Net
     
     private # All methods below are private methods
     
-    def compute_nets sleeping
+    def compute_nets( sleeping, now, time, delay )
         if sleeping then
-            puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s+' (Sleeping)'
+            1
+            #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s+' (Sleeping)'
         else 
-            puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+            #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+            0
         end
     end
 end
