@@ -4,11 +4,25 @@ class NNet
 	attr_accessor :frames, :maxDurationLeeway
 	
 	def initialize 
+        # Array containing all neurons in the net
 		@neurons = []
-		@triggerID = 0
 		
-		@frames = 0.020 # Every evaluation must at least take this much time to complete. We're storing the delay, so if we're running behind we won't sleep until we've caught up. The problem with sleeping too much is if the frames is too low.
-		@maxDurationLeeway = self.min(0.03,@frames*10) # maximum duration leeway, should be around 0.3 seconds so we're not going too far ahead or behind before forgiving. Default is 10 times frames time but minimum of 0.03 seconds which we're pretty sure the computer can handle
+        # ID of the current tick (a 'tick' is one processing of all neurons in net)
+        @tickID = 0
+		
+        # Every evaluation must at least take this much time to complete. 
+        # We're storing the delay, so if we're running behind we won't 
+        # sleep until we've caught up. The problem with sleeping too 
+        # much is if the frames is too low.
+		@frames = 0.001 
+        
+		# maximum duration leeway, should be around 0.3 seconds so we're 
+        # not going too far ahead or behind before forgiving. Default is 
+        # 10 times frames time but minimum of 0.03 seconds which we're 
+        # pretty sure the computer can handle
+        @maxDurationLeeway = self.min(0.03,@frames*10) 
+        
+        @start = Time.new
 	end
 	
 	# Adds the neuron to the net and returns the index of its array position
@@ -25,37 +39,35 @@ class NNet
     # show us this, but unlimited is a really bad idea so we need a timer
     # and the lowest sleep we can do is too slow (around 0.05 is the least)
 	def run
-		start = Time.new
-		
-		actives = []
-		register = Proc.new do |neuron|
-			actives.push(neuron) #register the neuron (which is what will call this proc) as active
-		end
+		#~ actives = []
+		#~ register = Proc.new do |neuron|
+			#~ actives.push(neuron) #register the neuron (which is what will call this proc) as active
+		#~ end
 		
 		
 		# The following sequence will execute code as closely as it can to the specified
 		# frames per second, evaluating twice or more before sleeping if we slept too long
-		frames = 0.001
-		start = Time.new
-		time = start
+		@start = Time.new
+		prev_tick = @start
 		delay = 0
 		100.times do
-			now = Time.new
-			delay += (now-time) #todo: min( (now-time), 0.5)
+			tick = Time.new
+			delay += (tick-prev_tick) #todo: min( (tick-prev_tick), 0.5)
 			
-			if delay < frames then
-				# TODO: do usual stuff here
-				compute_nets(true, now, time, delay)
-				sleep( frames )
+			if delay < @frames then
+				# TODO: do a 'tick' here
+				#~ sleep( @frames-delay )
+                compute_nets(true, tick, prev_tick, delay) # tick
+                sleep( @frames-delay )
 			else 
-				# TODO: do same usual stuff here, this will not be sleeped after
-				compute_nets(false, now, time, delay) #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+				# TODO: do tick here, this will not be sleeped after
+				compute_nets(false, tick, prev_tick, delay) # tick
 			end
-			delay -= frames
+			delay -= @frames
 			
-			time = now
+			prev_tick = tick
 		end
-		puts 'Total = '+(Time.new-start).to_s
+		puts 'Total = '+(Time.new-@start).to_s
 	end
 	
 	
@@ -73,12 +85,15 @@ class NNet
     
     private # All methods below are private methods
     
-    def compute_nets( sleeping, now, time, delay )
+    def compute_nets( sleeping, tick, prev_tick, delay )
         if sleeping then
             1
-            #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s+' (Sleeping)'
+            #puts sprintf("foo %.8f", 123.4567)
+            puts sprintf("Time: %0.9f; Delay: %0.9f; Sleeping for %0.9f", (tick-prev_tick), delay, (@frames-delay))
+            #puts 'Time: '+(tick - prev_tick).to_s+'; Delay:'+delay.to_s+' (Sleeping for '+(@frames-delay).to_s+')'
         else 
-            #puts 'Time: '+(now - time).to_s+'; Delay:'+delay.to_s
+            puts sprintf("Time: %0.9f; Delay: %0.9f;", (tick-prev_tick), delay)
+            #puts 'Time: '+(tick - prev_tick).to_s+'; Delay:'+delay.to_s
             0
         end
     end
