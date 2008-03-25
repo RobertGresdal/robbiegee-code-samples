@@ -45,29 +45,31 @@ class NNet
 		#~ end
 		
 		
-		# The following sequence will execute code as closely as it can to the specified
-		# frames per second, evaluating twice or more before sleeping if we slept too long
+		# The following sequence will execute code as closely as it can to 
+		# the specified frames per second, evaluating twice or more before 
+        # sleeping if we slept too long
 		@start = Time.new
 		prev_tick = @start
 		delay = 0
-		100.times do
+		300.times do
 			tick = Time.new
-			delay += (tick-prev_tick) #todo: min( (tick-prev_tick), 0.5)
+			delay += (tick-prev_tick) #todo: min( (tick-prev_tick), @maxDurationLeeway)
 			
 			if delay < @frames then
 				# TODO: do a 'tick' here
 				#~ sleep( @frames-delay )
-                compute_nets(true, tick, prev_tick, delay) # tick
                 sleep( @frames-delay )
+                a = Time.new
+                compute_nets((a-tick), tick, prev_tick, delay) # tick
 			else 
 				# TODO: do tick here, this will not be sleeped after
-				compute_nets(false, tick, prev_tick, delay) # tick
+				compute_nets(-1, tick, prev_tick, delay) # tick
 			end
 			delay -= @frames
 			
 			prev_tick = tick
 		end
-		puts 'Total = '+(Time.new-@start).to_s
+		puts 'Total '+(Time.new-@start).to_s
 	end
 	
 	
@@ -85,14 +87,14 @@ class NNet
     
     private # All methods below are private methods
     
-    def compute_nets( sleeping, tick, prev_tick, delay )
-        if sleeping then
+    def compute_nets( slept, tick, prev_tick, delay )
+        if slept > 0 then
             1
             #puts sprintf("foo %.8f", 123.4567)
-            puts sprintf("Time: %0.9f; Delay: %0.9f; Sleeping for %0.9f", (tick-prev_tick), delay, (@frames-delay))
+            puts sprintf("Time: %0.4f; Delay: %0.4f; Slept for: %0.4f (%0.4f)", (tick-prev_tick), delay, slept, (@frames-delay))
             #puts 'Time: '+(tick - prev_tick).to_s+'; Delay:'+delay.to_s+' (Sleeping for '+(@frames-delay).to_s+')'
         else 
-            puts sprintf("Time: %0.9f; Delay: %0.9f;", (tick-prev_tick), delay)
+            puts sprintf("Time: %0.4f; Delay: %0.4f;", (tick-prev_tick), delay)
             #puts 'Time: '+(tick - prev_tick).to_s+'; Delay:'+delay.to_s
             0
         end
