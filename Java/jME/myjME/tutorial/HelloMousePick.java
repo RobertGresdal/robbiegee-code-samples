@@ -47,11 +47,11 @@ public class HelloMousePick extends SimpleGame {
 		// Make the mouses background blend with what's already there
 		AlphaState as = display.getRenderer().createAlphaState();
 		as.setBlendEnabled(true);
-		/* the following calls has been deprecated, so we can do without them :-)
-		as.setSrcFunction(AlphaState.SB_SRC_ALPHA);
-		as.setDstFunction(AlphaState.DB_ONE_MINUS_SRC_ALPHA);
-		as.setTestEnabled(true);
-		as.setTestFunction(AlphaState.TF_GREATER);*/
+		/* optional calls as far as I can see
+		as.setSrcFunction(AlphaState.SB_SRC_ALPHA); // default value, so we can skip the call
+		as.setDstFunction(AlphaState.DB_ONE_MINUS_SRC_ALPHA);  // default value again
+		as.setTestEnabled(true); // apparently not needed here
+		as.setTestFunction(AlphaState.TF_GREATER); // default is TS_ALWAYS */
 		mouse.setRenderState(as);
 		
 		// Get the mouse input device and assign it to the AbsoluteMouse
