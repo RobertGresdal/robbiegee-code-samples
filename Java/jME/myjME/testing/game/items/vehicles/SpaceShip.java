@@ -3,6 +3,7 @@ package myjME.testing.game.items.vehicles;
 import java.net.URL;
 
 import com.jme.image.Texture;
+import com.jme.input.KeyBindingManager;
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -16,9 +17,11 @@ public class SpaceShip {
 	public float x,y,z,rotation;
 	public Node model;
 	
+	private KeyBindingManager kbm;
 	private DisplaySystem display;
 	
 	public SpaceShip(){
+		kbm = KeyBindingManager.getKeyBindingManager();
 		display = DisplaySystem.getDisplaySystem();
 		x=0f;
 		y=0f;
@@ -42,9 +45,24 @@ public class SpaceShip {
 	}
 	
 	public void simpleUpdate(){
+		// if the coordsUp command was activated
+		if(kbm.isValidCommand("moveUp",true)){
+			thrust(0.02f);
+		}
+		// if the coordsDown was activated
+		if(kbm.isValidCommand("moveDown",true)){
+			thrust(-0.02f);
+		}
+		if(kbm.isValidCommand("rotLeft",true)){
+			turn(0.01f);
+		}
+		if(kbm.isValidCommand("rotRight",true)){
+			turn(-0.01f);
+		}
+		// calculate rotation ship
 		Quaternion q=new Quaternion();
 		q.fromAngleAxis(rotation,new Vector3f(0,0,1));
-		
+		// set rotation and movement
 		model.setLocalTranslation(x, y, z);
 		model.setLocalRotation(q);
 	}
