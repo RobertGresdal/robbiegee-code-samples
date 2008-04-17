@@ -7,11 +7,6 @@ import myjME.testing.game.items.vehicles.*;
 
 public class SimpleGame1 extends SimpleGame {
 	SpaceShip player;
-	
-	public SimpleGame1() {
-		// TODO Auto-generated constructor stub
-		
-	}
 
 	@Override
 	protected void simpleInitGame() {
@@ -39,26 +34,7 @@ public class SimpleGame1 extends SimpleGame {
 	 * called every frame update
 	 */
 	protected void simpleUpdate(){
-		// if the coordsUp command was activated
-		if (KeyBindingManager.getKeyBindingManager().isValidCommand("moveUp",true)){
-			player.thrust(0.02f);
-		}
-		// if the coordsDown was activated
-		if(KeyBindingManager.getKeyBindingManager().isValidCommand("moveDown",true)){
-			player.thrust(-0.02f);
-		}
-		if (KeyBindingManager.getKeyBindingManager().isValidCommand("rotLeft",true)){
-			player.turn(0.005f);
-		}
-		if (KeyBindingManager.getKeyBindingManager().isValidCommand("rotRight",true)){
-			player.turn(-0.005f);
-		}
-		/*
-		Quaternion q=new Quaternion();
-		q.fromAngleAxis(player.rotation,new Vector3f(0,0,1));
-		
-		n.setLocalTranslation(player.x, player.y, player.z);
-		n.setLocalRotation(q);*/
+		player.simpleUpdate();
 	}
 	
 	/**
