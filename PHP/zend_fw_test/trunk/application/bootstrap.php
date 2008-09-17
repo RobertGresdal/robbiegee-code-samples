@@ -46,16 +46,6 @@ $configuration = new Zend_Config_Ini(
     APPLICATION_ENVIRONMENT
 );
 
-// REGISTRY - setup the application registry
-// An application registry allows the application to store application 
-// necessary objects into a safe and consistent (non global) place for future 
-// retrieval.  This allows the application to ensure that regardless of what 
-// happends in the global scope, the registry will contain the objects it 
-// needs.
-$registry = Zend_Registry::getInstance();
-$registry->configuration = $configuration;
-$registry->dbAdapter     = $dbAdapter;
-
 // DATABASE ADAPTER - Setup the database adapter
 // Zend_Db implements a factory interface that allows developers to pass in an 
 // adapter name and some parameters that will create an appropriate database 
