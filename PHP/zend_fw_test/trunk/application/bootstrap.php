@@ -69,6 +69,7 @@ Zend_Db_Table_Abstract::setDefaultAdapter($dbAdapter);
 // @see http://www.doctrine-project.org/documentation/manual/1_0?chapter=getting-started#auto-loading-models:conservative
 spl_autoload_register(array('Doctrine','autoload'));
 Doctrine_Manager::connection($configuration->database->dsn); 
+// @todo handle error when we can't connect
 Doctrine_Manager::getInstance()->setAttribute('model_loading', 'aggressive');
 Doctrine::loadModels(APPLICATION_PATH.'/models'); // This call will now require the found .php files
 
@@ -81,6 +82,7 @@ Doctrine::loadModels(APPLICATION_PATH.'/models'); // This call will now require 
 $registry = Zend_Registry::getInstance();
 $registry->configuration = $configuration;
 // @todo Remove Zend_Db? we're using Doctrine
+// @todo Add the doctrine connection
 $registry->dbAdapter     = $dbAdapter;
 
 // CLEANUP - remove items from global scope
