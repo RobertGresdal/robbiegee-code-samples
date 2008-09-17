@@ -9,6 +9,22 @@ defined('APPLICATION_PATH')
 defined('APPLICATION_ENVIRONMENT')
     or define('APPLICATION_ENVIRONMENT', 'development');
 
+
+// INCLUDE PATH - Add the "library" directory to the include_path, so 
+// that PHP can find our Zend Framework classes.
+set_include_path(
+    APPLICATION_PATH . '/../library' 
+    . PATH_SEPARATOR . get_include_path()
+);
+
+// AUTOLOADER - Set up autoloading.
+// This is a nifty trick that allows ZF to load classes automatically so
+// that you don't have to litter your code with 'include' or 'require'
+// statements.
+require_once "Zend/Loader.php";
+Zend_Loader::registerAutoload();
+
+
 // FRONT CONTROLLER - Get the front controller.
 // The Zend_Front_Controller class implements the Singleton pattern, which is a
 // design pattern used to ensure there is only one instance of
