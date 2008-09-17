@@ -51,13 +51,26 @@ $configuration = new Zend_Config_Ini(
 // adapter name and some parameters that will create an appropriate database 
 // adapter object.  In this instance, we will be using the values found in the 
 // "database" section of the configuration obj.
+// @todo Remove Zend_Db? we're using Doctrine
 $dbAdapter = Zend_Db::factory($configuration->database);
 
 // DATABASE TABLE SETUP - Setup the Database Table Adapter
 // Since our application will be utilizing the Zend_Db_Table component, we need 
 // to give it a default adapter that all table objects will be able to utilize 
 // when sending queries to the db.
+// @todo Remove Zend_Db? we're using Doctrine
 Zend_Db_Table_Abstract::setDefaultAdapter($dbAdapter);
+
+// DOCTRINE SETUP
+// Set Doctrines autoloading, configure the database with the  DSN specified in 
+// the ini file and enable conservative model loading. 
+// @todo: do some error checking here
+// @todo: specify conservative or aggressive model loading in the ini file
+// @see http://www.doctrine-project.org/documentation/manual/1_0?chapter=getting-started#auto-loading-models:conservative
+spl_autoload_register(array('Doctrine','autoload'));
+Doctrine_Manager::connection($configuration->database->dsn); 
+Doctrine_Manager::getInstance()->setAttribute('model_loading', 'aggressive');
+Doctrine::loadModels(APPLICATION_PATH.'/models'); // This call will now require the found .php files
 
 // REGISTRY - setup the application registry
 // An application registry allows the application to store application 
@@ -67,6 +80,7 @@ Zend_Db_Table_Abstract::setDefaultAdapter($dbAdapter);
 // needs.
 $registry = Zend_Registry::getInstance();
 $registry->configuration = $configuration;
+// @todo Remove Zend_Db? we're using Doctrine
 $registry->dbAdapter     = $dbAdapter;
 
 // CLEANUP - remove items from global scope
