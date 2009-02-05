@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Artificial competing neural nets in a hostile environment</title>
+	<meta name="keywords" content="evolution,neural nets,artificial,intelligence,hostile,environment" />
+	<meta name="description" content="Attempt at implementing evolving neural nets in ECMAScript." />
+	<link rel="next" href="environment.xhtml" />
+	<script type="text/javascript" src="neuron.js"></script>
+	<script type="text/javascript"><!--//--><![CDATA[//><!--
+	function foreach(stack,callback){
+		var activity = false;
+		for(var i=0,end=stack.length;i<end;i++){
+			activity |= callback(stack[i]);
+		}
+		return activity;
+	}
+	function output(txt){
+		document.getElementById('testres').firstChild.data = txt;
+	}
+	function test_xor(){
+		try{
+			window.output('Working...');
+			var net1 = new Array();
+			var net2 = new Array();
+			var net3 = new Array();
+			var net4 = new Array();
+			function run1(neuron){net1[net1.length] = neuron;}
+			function run2(neuron){net2[net2.length] = neuron;}
+			function run3(neuron){net3[net3.length] = neuron;}
+			function run4(neuron){net4[net4.length] = neuron;}
+			
+			function step(x){return x>=1?1:0;}// returns 1 if input is larger than or equal to 1
+			function linear(x){return x;}
+			
+			var input1 = new Neuron(linear,1);
+			var input2 = new Neuron(linear,1);
+			var n1 = new Neuron(linear,1);
+			var n2 = new Neuron(linear,2);
+			var n3 = new Neuron(linear,1);
+			var output = new Neuron(linear,1);
+			input1.addConnection(1, n1);
+			input1.addConnection(1, n2);
+			input2.addConnection(1, n2);
+			input2.addConnection(1, n3);
+			n1.addConnection( 1, output);
+			n2.addConnection(-1, output);
+			n3.addConnection( 1, output);
+			output.addConnection(1, {'trigger':function(v,r){window.output('Value returned was '+v)}} );
+			
+			input1.trigger(document.getElementById('i1').value,run1); // n1 now adds itself to the net1 array
+			input2.trigger(document.getElementById('i2').value,run1); // n1 now adds itself to the net1 array
+			
+			//foreach(net1,function(n){alert(n)}); 
+			var res = true;
+			res &= foreach(net1,function(n){return n.fire(run2);}); // f:i1,i2 - t:n1,n2,(n2),n3
+			res &= foreach(net2,function(n){return n.fire(run3);}); // f:n1,n2,n3 - t:op
+			res &= foreach(net3,function(n){return n.fire(run4);}); // f:op
+			if(!res)window.output('The neural net did not fire to the output node.');
+		} catch(e){
+			alert('Error: '+e);
+		}
+	}
+	//-->]]>
+	</script>
+</head>
+<body>
+
+<h1 id="start">Artificial neural nets competing for survival</h1>
+
+<p>This is my feeble attempt at implementing some basic neural nets in ECMAScript. It is mostly for my own curiosity, to see it I could pull it off.</p>
+
+
+
+
+
+
+<h2 id="intro">A long way</h2>
+
+<p>I've never had much experience with artificial neural nets before, not even that much with artificial intelligence. I made a <a href="http://www.lego.com"><abbr title="Leg godt">LEGO</abbr></a> robot, coded in <acronym title="Not Quite C">NQC</acronym> when I was 17 that "ate" light and could expire if it did not find any food in time. Then I went to college and we started by programming LEGO robots using some kind of drag'n drop interface to just follow a black line. They wouldn't allow me to use NQC because that'd be an unfair advantage in the competition that would be held. Yay for our educational system and the logic that if you're more educated, you shouldn't be allowed to <em>use</em> it to your advantage, even if it's the main purpose of having said competition...</p>
+
+<p>Okay, enough ranting.</p>
+
+
+
+
+<h2 id="xor_net">A neural net simulating XOR</h2>
+
+<p>The two input fields here are connected to two sensory neurons in a net that simulates the XOR function. If the net responds, the output is 1. No answer can be interpreted as 0.
+</p>
+<form action="#" onsubmit="javascript:test_xor();return false;">
+	<input type="text" size="3" id="i1" value="0" />
+	<input type="text" size="3" id="i2" value="1" />
+	<input type="submit" value="Test" />
+	<label id="testres">Click the Test button. The result will appear here.</label>
+</form>
+
+
+
+</body>
+</html>
