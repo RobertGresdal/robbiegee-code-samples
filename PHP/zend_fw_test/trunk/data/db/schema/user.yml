@@ -1,7 +1,0 @@
----
-User:
-  actAs: [Timestampable]
-  columns:
-    name: string(30)
-    username: string(20)
-    password: string(128)
