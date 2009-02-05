@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Artificial competing neural nets in a hostile environment</title>
+	<meta name="keywords" content="evolution,neural nets,artificial,intelligence,hostile,environment" />
+	<meta name="description" content="Attempt at implementing evolving neural nets in ECMAScript." />
+	<link rel="prev" href="default.xhtml" />
+	<script type="text/javascript" src="neuron.js"></script>
+	<script type="text/javascript"><!--//--><![CDATA[//><!--
+	var control = '';
+	var genes = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s',
+		't','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N',
+		'O','P','Q','R','S','T','U','V','W','X','Y','Z','.',',',' '];
+	
+	
+	
+	/** 
+	* The replicator takes an array of individuals, a fitness function
+	* and a replicator function. The replicator function takes the output
+	* of the fitnessFunction, a number between 0 and 1, in consideration
+	* of wether the current individual should be allowed to propagate
+	*/
+	function Replicator(p,r){
+		this.parents = p; // p is an array of parents
+		this.replicatorFunction = r;
+		
+		this.geneLengthChangeChance = 0; // Chance of changing the gene length
+		this.mutationChance = 0.01; // Chance of mutating a gene
+		
+		function addParent(p){
+			this.parents[this.parents.length] = p;
+		}
+		
+		// Makes a child on the basis of all parents (yes, more than 2 parents is possible)
+		function getChild(){
+			var cg = ""; // child gene
+			for(var i=0,cp=0,end=this.parents[cp].gene.length;i<end;i++){
+				// Chance of changing which parent the gene inherits from:
+				cp = (Math.random()<0.5) ? Math.floor(Math.random()*this.parents.length) : cp; 
+				if(Math.random()<this.mutationChance){
+					// This gene mutated
+					cg += genes[ Math.floor(Math.random()*genes.length) ]; // Choose a random gene
+				} else {
+					cg += this.parents[cp].gene[i]; // Copy the gene of the parent
+				}
+			}
+			if(Math.random()<this.geneLengthChangeChance){
+				if(Math.random()<0.5)
+					cg += genes[ Math.floor(Math.random()*genes.length) ]; // Choose a random gene
+				else {
+					cg = cg.substring(0,cg.length-1); // remove a gene. TODO: remove a random gene
+				}
+			}
+			var c = new Individual(cg);
+			return c; 
+		}
+		
+		this.addParent = addParent;
+		this.getChild = getChild;
+	}
+	
+	
+	
+	/**
+	 * The environment holds the information about how many
+	 * individuals it can support and who lives there. It
+	 * also carry the responseability of comparing the fitness
+	 * values of individuals against each other and decide who
+	 * gets to propagate and who dies childless.
+	 *
+	 * This SimpleEnvironment spawns a few individuals and choose the
+	 * two fittest to mate.
+	 *
+	 * In future versions, the genes also control which individuals
+	 * are attracted to each other, so individuals will be asked
+	 * wether they find the other "sexy" and wants to mate. I've
+	 * no idea how to do that yet, but using neural nets for this
+	 * seems like a plausible idea.
+	 */
+	function SimpleEnvironment(controlGene, replicator){
+		this.replicator = replicator;
+		this.reportBack = null; // function called for reporting back
+		
+		function evaluateFitness(individual){
+			return arrayLikeness(controlGene, individual.gene);
+		}
+		
+		function run(maxIterations){
+			maxIterations = maxIterations > 0 ? maxIterations : 1; // run at least once
+			var mother, father; // the two fittest of each round
+			
+			// Make a list of the initial individuals in the environment, starting with an empty
+			var inds = Array();
+			// Spawn 10 individuals
+			for(var i=0;i<2;i++) inds[i] = new Individual( randomGene(controlGene.length) );
+			father = inds[0];
+			mother = inds[1];
+			var rep = new Replicator([father,mother],null);
+			
+			// Run a set of iterations
+			for(var j=0,done=false;j<maxIterations && !done;j++){
+				
+				// Let the two individuals spawn 10 children
+				rep.parents = [father,mother];
+				for(var i=0;i<8;i++) inds[i] = rep.getChild();
+				
+				// Find the two best individuals
+				inds.sort( function(a,b){
+					//return (arrayLikeness(controlGene,b.gene) - arrayLikeness(controlGene,a.gene));
+					return (b.geneFit - a.geneFit);
+				});
+				father = inds[0];
+				mother = inds[1];
+				
+				if(inds[0].geneFit == 1)done=true; //
+				
+				if(this.reportBack != null){
+					//this.reportBack(inds[0].gene,''+(j+1), arrayLikeness(controlGene,inds[0].gene));
+					this.reportBack(inds[0].gene,''+(j+1), inds[0].geneFit);
+				}
+			}
+		}
+		
+		this.evaluateFitness = evaluateFitness;
+		this.run = run;
+	}
+	
+	
+	
+	/**
+	* "Individual" class holds the genes
+	*/
+	function Individual(g){
+		this.gene = g;
+		this.geneFit = arrayLikeness(control, g);
+	}
+	
+	
+	
+	/**
+	* Compares two arrays (or strings for that matter) and returns 
+	* a number between 0 and 1, indicating their percentage of likeness.
+	*/
+	function arrayLikeness(control, test){
+		var cl = control.length;
+		var tl = test.length;
+		var sum = 0;
+		
+		// Count the misses
+		for(var i=0;i<cl;i++){
+			if( control[i] != test[i] )sum ++;
+		}
+		
+		// Count the misses caused by too long of a test string
+		if( cl < tl )sum += tl - cl;
+		
+		return (1-(sum/(cl>tl?cl:tl))) || 0; // Returns 0 instead of NaN
+	}
+	
+	
+	
+	function randomGene(length, genemap){
+		genemap = typeof(genemap)=='Array' ? genemap : ['a','b','c','d','e','f','g','h',
+		'i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B',
+		'C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V',
+		'W','X','Y','Z','.',',',' '];
+		var str = '';
+		for(var i=0;i<length;i++){
+			str += genemap[ Math.floor(Math.random()*genemap.length) ];
+		}
+		return str;
+	}
+	
+	
+	
+	function init(){
+		//alert( arrayLikeness('Foxy lady.','Foxy chick') );
+		//alert( arrayLikeness('','') );
+		
+		document.getElementById('buttonRunTest').addEventListener('click',function(){
+			var bestIndividual = document.getElementById('bestIndividual');
+			var individualGeneration = document.getElementById('generationNumber');
+			var bestFitness = document.getElementById('bestFitness');
+			control = document.getElementById('controlGene').value;
+			var replicator = new Replicator(null,null);
+			var env = new SimpleEnvironment(control, replicator);
+			env.reportBack = function(bestFit, generation, bf){
+				bestIndividual.value = bestFit;
+				individualGeneration.value = generation;
+				bestFitness.value = bf;
+			};
+			env.run(2500);
+		},false);
+	}
+	window.onload = init;
+	//-->]]>
+	</script>
+</head>
+<body>
+
+
+<h1 id="start">Darwin in action</h1>
+
+<p>Connecting neurons manually doesn't seem very fun to me and seems akin to connecting transistors with wires and a soldering iron. Let's go for evolution!
+</p>
+
+
+
+<h2 id="evolution">Evolution</h2>
+
+<p>My understanding with the intricacies of the theory of evolution isn't quite on par with <a href="http://en.wikipedia.org/wiki/Richard_Dawkins">Richard Dawkins</a>, but I do understand the basic principle that anything which replicates with minor variations and is exposed to some form of selection, will converge towards the optimal variant for that particular environment.
+</p>
+
+<p>So what we need is a replicator function and a selection scheme. The replicator function needs some way of defining the layout of neural nets by data we easily can store, alter and transfer. <a href="http://en.wikipedia.org/wiki/JSON">JSON</a> should work fine for transfer purpose. As a selection scheme, there are various techniques I'd like to try out.
+</p>
+
+<p>The first one will be a simple computer guided selection. We let the genes be a range from the english alpabet including punctuation, and let it try to evolve into a complete sentence: "The lazy dog jumped over the fence.". The chance of this sentence occuring randomly is only 1 out of 35<sup>54</sup> = 2.3970*10^83 when taking into account upper- and lowercase letters plus punctuation. Note that this number is slightly larger (only a thousand times or so) than <a href="http://www.madsci.org/posts/archives/oct98/905633072.As.r.html">the currently estimated amount of atoms in the known universe</a>! Evolution is not a process dictated by pure chance however, as we shall see demonstrated soon. 
+</p>
+
+
+
+<h2 id="replicator">Replicator</h2>
+
+<p>The way the replicator works is it keeps a list of all the individuals, testing how well they perform in the given environment by using a fitness function. Depending on the settings, one or more of the individuals are allowed to propagate.
+</p>
+
+
+
+
+
+
+
+<div>
+<input type="text" size="70" value="Control gene. Use text and punctuation only, please." id="controlGene" />
+<input type="button" value="Run test" id="buttonRunTest" />
+</div>
+<div>
+<input type="text" id="bestIndividual" value="Best individual" size="70" />
+<input type="text" id="bestFitness" value="Best fitness" size="7" />
+<input type="text" id="generationNumber" value="Gen. #" size="5" />
+</div>
+
+<h2>Bibliography</h2>
+<ul>
+<li><a href="http://www.madsci.org/posts/archives/oct98/905633072.As.r.html">How many atoms make up the universe?</a></li>
+</ul>
+
+
+</body>
+</html>
