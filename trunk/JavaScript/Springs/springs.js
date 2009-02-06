@@ -1,14 +1,13 @@
 function MouseCursor(object){
-	this.x=200;
-	this.y=200;
-	object.addEventListener('mousemove',setPos,false);
-	//object.addEventListener('mouseover',function(e){alert(this.x)},false);
-	setPageTopLeft(object);
+	var x = 200;
+	var y = 200;
 	
-	function setPos(e){
+	function move(e){
 		p = getMousePos(e);
+		setPageTopLeft(e.target);
 		this.x = p[0] - object.pageLeft;
 		this.y = p[1] - object.pageTop;
+		opera.postError('setpos run ['+this.x+','+this.y+']');
 	}
 	
 	function getMousePos(e){
@@ -39,16 +38,19 @@ function MouseCursor(object){
 	 
 		obj.pageTop = top;
 		obj.pageLeft = left;
-	 
 	}
 	
 	this.getForce = [0,0];
+	this.move = move;
+	this.x=x;
+	this.y=y;
 }
 
 function Ball(x,y,m){
 	var x,y,m;
 	var vx=0,vy=0; // Force from last tick, also known as acceleration
 	var forces = [];
+	var loss = 0.95;
 	
 	// takes a vector and applies the force to this item
 	//function applyForce(vector){}
@@ -65,6 +67,8 @@ function Ball(x,y,m){
 			vx += F[0];
 			vy += F[1];
 		}
+		vx *= loss;
+		vy *= loss;
 	}
 	// Apply the force over dt time
 	function applyForces(dt){
@@ -88,31 +92,35 @@ function Anchor(x,y){
 /**
 * @implements Forcable
 */
-function Spring(parent,child,l,k,F,C) {
-	
-	var parent,child;
+function Spring(p,c,l,k,C) {
 	// A spring works as a doubly linked list in that
 	// it knows about both it's pre and post decessor
-	
+	var p,c;
 	var l; // rest length
 	var k; // tension, (N/m)
-	var F; // tension force
 	var C; // critical length of spring (will burst if extended beyond)
+	var slowness = 1; // decrease this to slow everything down! cool effect
+	var F; // tension force
 	
 	/* Hooke's lov: F = k*x; // k = fjærstivhet, x = forlengelse
     * Newton's 2. lov : F = m*a; // m = masse, a = aksellerasjon
     * l her er hvilelengden, og den trekkes fra forlengelsen
     */
 	function getForce(){
-		dx = parent.x - child.x;
-		dy = parent.y - child.y;
+		px = this.parent.x;
+		py = this.parent.y;
+	opera.postError(this.parent.x);
+		dx = px - this.child.x;
+		dy = py - this.child.y;
 		d = Math.sqrt( dx*dx + dy*dy ); // distance
-		F = (k*(d-l));
+		F = (k*(d-l))*slowness;
 		Fx = F*(dx/d);
 		Fy = F*(dy/d);
 		return [Fx,Fy];
 	}
 	this.getForce = getForce;
+	this.parent = p;
+	this.child = c;
 }
 
 function Gravity(){
@@ -124,6 +132,8 @@ function Gravity(){
 
 function Render(canvas){
 	var balls = [];
+	var strings = [];
+	
 	var bufferc = document.createElement('canvas');
 		bufferc.setAttribute('width','480');
 		bufferc.setAttribute('height','320');
@@ -132,8 +142,11 @@ function Render(canvas){
 	var screen_canvas = canvas.getContext('2d');
 		screen_canvas.globalCompositeOperation = 'copy';
 	
-	function registerBall(object,r,fill,stroke){
+	function registerBall(object){
 		balls.push(object);
+	}
+	function registerString(s){
+		strings.push(s);
 	}
 	
 	function render(){
@@ -153,12 +166,19 @@ function Render(canvas){
 			c.closePath()
 			c.fill();
 		}
+		for(var i=0,end=strings.length;i<end;i++){
+			c.beginPath();
+			c.moveTo(strings[i].parent.x,strings[i].parent.y);
+			c.lineTo(strings[i].child.x,strings[i].child.y);
+			c.stroke();
+		}
 		screen_canvas.drawImage(bufferc,0,0);
 	}
 	
 	// Make public functions
 	this.render = render;
 	this.registerBall = registerBall;
+	this.registerString = registerString;
 }
 
 function Physics(){

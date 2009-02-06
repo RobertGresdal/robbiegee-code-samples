@@ -14,13 +14,12 @@
 
 <canvas id="c" width="480" height="320" style="border:1px solid black"></canvas>
 
-<input id="output1"/><input id="output2"/>
-
 <script type="text/javascript">
 window.onload = function(){
 	c = document.getElementById('c');
 
 	mc = new MouseCursor(c);
+	c.addEventListener('mousemove',function(e){mc.move(e)},false);
 
 	//r = new Spring('Foo', 20); //give render canvas and set to 20 fps
 	g = new Gravity();
@@ -28,8 +27,8 @@ window.onload = function(){
 	b1 = new Ball(120,20,5);
 	b2 = new Ball(80,60,10);
 	
-	s1 = new Spring(mc,b1,50,5,1,200);
-	s2 = new Spring(mc,b2,50,5,1,200);
+	s1 = new Spring(mc,b1,50,5,200);
+	s2 = new Spring(mc,b2,50,5,200);
 	
 	b1.registerForce(g); //register gravity
 	b1.registerForce(s1); //register spring
@@ -43,6 +42,8 @@ window.onload = function(){
 	r = new Render(c);
 	r.registerBall(b1);
 	r.registerBall(b2);
+	r.registerString(s1);
+	r.registerString(s2);
 	
 	l = new Logic();
 	l.setRender(r);
