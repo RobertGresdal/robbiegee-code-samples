@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>3D sim canvas</title>
+	<script type="text/javascript" src="springs.js"></script>
+</head>
+<body>
+
+<h1>Springs</h1>
+
+<p>I'm trying to recreate a java applet I wrote for a school submission that were supposed to animate a ball suspended on a string. I created a spring system where one could fling the ball around. It could have been a fun game had I added some logic to it.
+</p>
+
+<canvas id="c" width="480" height="320" style="border:1px solid black"></canvas>
+
+<input id="output1"/><input id="output2"/>
+
+<script type="text/javascript">
+window.onload = function(){
+	c = document.getElementById('c');
+
+	mc = new MouseCursor(c);
+
+	//r = new Spring('Foo', 20); //give render canvas and set to 20 fps
+	g = new Gravity();
+	
+	b1 = new Ball(120,20,5);
+	b2 = new Ball(80,60,10);
+	
+	s1 = new Spring(mc,b1,50,5,1,200);
+	s2 = new Spring(mc,b2,50,5,1,200);
+	
+	b1.registerForce(g); //register gravity
+	b1.registerForce(s1); //register spring
+	b2.registerForce(s2);
+	b2.registerForce(g); 
+	
+	p = new Physics();
+	p.registerBall(b1);
+	p.registerBall(b2);
+	
+	r = new Render(c);
+	r.registerBall(b1);
+	r.registerBall(b2);
+	
+	l = new Logic();
+	l.setRender(r);
+	l.setPhysics(p);
+	l.run();
+}
+</script>
+</body>
+</html>
