@@ -7,15 +7,23 @@ jsblock.v.suspects = true; // report suspected scripts found
 jsblock.v.externals = true; // report external scripts found
 jsblock.trackGoogle = true; // google is usually nice. their tracker does not track between sites and their scripts are very fast.
 jsblock.list = [
+    'a.tribalfusion.com/j.ad',
+	'ad.doubleclick.net/adj',
+	'ad.no.doubleclick.net/adj',
+	'adserver.adtech.de',
     'adsremote.scripps.com',
+	'annonser.dagbladet.no',
+	'basefarm.net/RealMedia/ads',
+	'advertising.com/wrapper/aceUAC.js',
     'core.insightexpressai.com/adServer/',
     'edge.quantserve.com/quant.js', // did some cookie stuff. dunno what it is but it's probably a tracker
-    'js.adsonar.com',
+    'hstno.tradedoubler.com',
+	'js.adsonar.com',
+    'o.aolcdn.com/ads/adsWrapper.js',
     'oascentral.dilbert.com/RealMedia/ads',
-    'st.sageanalyst.net'//,
-    //'core.insightexpressai.com/adServer/'
+    'st.sageanalyst.net',
+	'track.adform.net'
 ];
-
 
 
 //
