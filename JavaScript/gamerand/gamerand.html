@@ -1,0 +1,37 @@
+<script>
+// You need to initialize low and high to seed values.
+
+// This would look better as a class but I'm lazy.
+var low;
+var high;
+
+
+function GameRand(){
+	high = (high << 16) + (high >> 16);
+
+	high += low;
+
+	low += high;
+	
+	// my addition to make output an unsigned int
+	high = Math.abs(high % 0xFFFFFFFF);
+	
+	return high;
+}
+
+
+function main(){
+    high = 0xDEADBEEF;
+
+    // usually I only have one uint32 to initialize with so I xor it 
+    //with a known good seed to get the second seed value
+    low = high ^ 0x49616E42;
+
+    for (var i = 0; i < 10; ++i) {
+//	document.write( '<div>'+i+': '+(GameRand()/0xFFFFFFFF)+'</div>' ); // easier to see the spread with this line
+	document.write( '<div>'+i+': '+GameRand()+'</div>' );
+    }
+
+}
+main();
+</script>
